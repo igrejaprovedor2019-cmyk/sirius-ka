@@ -1,252 +1,264 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
+  <title>Quiz Bíblico DBV</title>
 
-import {
-  getDatabase,
-  ref,
-  set,
-  push,
-  onValue,
-  update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-const firebaseConfig = {
+  <style>
 
-  apiKey: "AIzaSyAjOaYYOwhGhbe_fHf2pwSGVzeHyB2m4zE",
+    body{
+      margin:0;
+      overflow:hidden;
+      font-family:Arial;
+      background:black;
+      color:white;
+    }
 
-  authDomain: "quiz-dbv.firebaseapp.com",
+    .bg{
+      position:fixed;
+      inset:0;
+      background:url('https://images.unsplash.com/photo-1504052434569-70ad5836ab65?q=80&w=1974&auto=format&fit=crop') center/cover;
+      filter:blur(10px);
+      transform:scale(1.1);
+      opacity:0.25;
+    }
 
-  databaseURL: "https://quiz-dbv-default-rtdb.firebaseio.com",
+    .glass{
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.1);
+    }
 
-  projectId: "quiz-dbv",
+    .questionAnimation{
+      animation:zoom .8s ease;
+    }
 
-  storageBucket: "quiz-dbv.firebasestorage.app",
+    @keyframes zoom{
+      0%{
+        transform:scale(.6);
+        opacity:0;
+      }
 
-  messagingSenderId: "870891743518",
+      100%{
+        transform:scale(1);
+        opacity:1;
+      }
+    }
 
-  appId: "1:870891743518:web:d4dacc306d3b039c34010f",
+  </style>
+</head>
 
-  measurementId: "G-36XPTYT4LD"
+<body>
 
-}
+<div class="bg"></div>
 
-// INICIAR FIREBASE
+<div class="relative z-10 flex h-screen">
 
-const app = initializeApp(firebaseConfig)
+  <!-- esquerda -->
 
-const db = getDatabase(app)
+  <div class="w-[320px] p-4 flex flex-col gap-4">
 
-console.log("Firebase conectado 🔥")
+    <div class="glass rounded-3xl p-5">
 
-// ========================================
-// CRIAR PLAYERS TESTE
-// ========================================
+      <h1 class="text-3xl font-bold text-yellow-400">
+        QUIZ DBV
+      </h1>
 
-function addPlayer(name){
+      <p class="text-gray-300 mt-2">
+        Sala: DBV-4821
+      </p>
 
-  const id = Date.now() + Math.floor(Math.random() * 1000)
+    </div>
 
-  set(ref(db, 'players/' + id), {
+    <div class="glass rounded-3xl p-5 flex flex-col items-center">
 
-    name: name,
-    points: 0,
-    answered: false
+      <h2 class="text-2xl font-bold mb-4">
+        QR CODE
+      </h2>
 
-  })
+      <div id="qrcode"></div>
 
-}
+    </div>
 
-// TESTE
+    <div class="glass rounded-3xl p-5 flex-1 overflow-auto">
 
-addPlayer("João")
-addPlayer("Maria")
-addPlayer("Pedro")
+      <h2 class="text-2xl font-bold text-yellow-400 mb-4">
+        Jogadores
+      </h2>
 
-// ========================================
-// MOSTRAR PLAYERS EM TEMPO REAL
-// ========================================
+      <div class="space-y-3">
 
-onValue(ref(db, 'players'), (snapshot) => {
+        <div class="bg-black/40 p-3 rounded-xl">
+          ✅ João
+        </div>
 
-  const data = snapshot.val()
+        <div class="bg-black/40 p-3 rounded-xl">
+          ✅ Maria
+        </div>
 
-  const playersDiv = document.getElementById("players")
-
-  playersDiv.innerHTML = ""
-
-  for(let id in data){
-
-    playersDiv.innerHTML += `
-
-      <div class="bg-black/40 p-3 rounded-xl flex justify-between">
-
-        <span>
-          ✅ ${data[id].name}
-        </span>
-
-        <span class="text-yellow-400">
-          ${data[id].points} pts
-        </span>
-
-      </div>
-
-    `
-
-  }
-
-})
-
-// ========================================
-// RANKING AO VIVO
-// ========================================
-
-onValue(ref(db, 'players'), (snapshot) => {
-
-  const data = snapshot.val()
-
-  const rankingDiv = document.getElementById("ranking")
-
-  rankingDiv.innerHTML = ""
-
-  const players = Object.entries(data || {})
-    .map(([id, player]) => ({
-      id,
-      ...player
-    }))
-    .sort((a,b) => b.points - a.points)
-
-  players.forEach((player, index) => {
-
-    let medal = "🏅"
-
-    if(index === 0) medal = "🥇"
-    if(index === 1) medal = "🥈"
-    if(index === 2) medal = "🥉"
-
-    rankingDiv.innerHTML += `
-
-      <div class="bg-black/40 p-4 rounded-2xl flex justify-between text-xl">
-
-        <span>
-          ${medal} ${player.name}
-        </span>
-
-        <span class="text-yellow-400">
-          ${player.points}
-        </span>
+        <div class="bg-black/40 p-3 rounded-xl">
+          ✅ Pedro
+        </div>
 
       </div>
 
-    `
+    </div>
 
-  })
+  </div>
 
+  <!-- centro -->
+
+  <div class="flex-1 p-4 flex flex-col gap-4">
+
+    <div class="glass rounded-3xl p-5 flex justify-between items-center">
+
+      <div>
+
+        <h2 class="text-3xl font-bold text-yellow-400">
+          Painel ADM
+        </h2>
+
+        <p class="text-gray-300">
+          Controle da partida
+        </p>
+
+      </div>
+
+      <div class="flex gap-3">
+
+        <button onclick="startGame()"
+        class="bg-green-500 px-6 py-3 rounded-2xl font-bold">
+          INICIAR
+        </button>
+
+        <button onclick="nextQuestion()"
+        class="bg-yellow-400 text-black px-6 py-3 rounded-2xl font-bold">
+          PRÓXIMA
+        </button>
+
+        <button
+        class="bg-red-500 px-6 py-3 rounded-2xl font-bold">
+          FINALIZAR
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="glass rounded-3xl flex-1 flex flex-col justify-center items-center p-10 text-center">
+
+      <div id="questionBox" class="questionAnimation">
+
+        <h1 id="question"
+        class="text-6xl font-bold text-yellow-300 mb-12">
+
+          Quem enfrentou Golias?
+
+        </h1>
+
+        <div id="answers"
+        class="hidden grid grid-cols-2 gap-5 w-full max-w-5xl">
+
+          <div class="bg-blue-500 p-5 rounded-2xl text-2xl font-bold">
+            A) Moisés
+          </div>
+
+          <div class="bg-green-500 p-5 rounded-2xl text-2xl font-bold">
+            B) Davi
+          </div>
+
+          <div class="bg-red-500 p-5 rounded-2xl text-2xl font-bold">
+            C) Pedro
+          </div>
+
+          <div class="bg-yellow-400 text-black p-5 rounded-2xl text-2xl font-bold">
+            D) Paulo
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="w-full max-w-4xl mt-12">
+
+        <div class="bg-white/10 rounded-full h-5 overflow-hidden">
+
+          <div id="timer"
+          class="bg-yellow-400 h-5 rounded-full"
+          style="width:100%">
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ranking -->
+
+  <div class="w-[320px] p-4">
+
+    <div class="glass rounded-3xl h-full p-5 overflow-auto">
+
+      <h2 class="text-3xl font-bold text-yellow-400 mb-5">
+        Ranking
+      </h2>
+
+      <div class="space-y-3">
+
+        <div class="bg-black/40 p-4 rounded-2xl flex justify-between">
+          <span>🥇 João</span>
+          <span>5400</span>
+        </div>
+
+        <div class="bg-black/40 p-4 rounded-2xl flex justify-between">
+          <span>🥈 Maria</span>
+          <span>5000</span>
+        </div>
+
+        <div class="bg-black/40 p-4 rounded-2xl flex justify-between">
+          <span>🥉 Pedro</span>
+          <span>3200</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+new QRCode(document.getElementById("qrcode"),{
+  text:"https://seusite.com",
+  width:220,
+  height:220,
+  colorDark:"#ffffff",
+  colorLight:"transparent"
 })
 
-// ========================================
-// SISTEMA DE PERGUNTAS
-// ========================================
-
-const questions = [
-
-  {
-
-    question: "Quem enfrentou Golias?",
-
-    answers: [
-      "Moisés",
-      "Davi",
-      "Pedro",
-      "Paulo"
-    ],
-
-    correct: 1,
-
-    double: false
-
-  },
-
-  {
-
-    question: "Quem entrou na arca?",
-
-    answers: [
-      "Noé",
-      "Daniel",
-      "Abraão",
-      "Samuel"
-    ],
-
-    correct: 0,
-
-    double: true
-
-  }
-
-]
-
-let currentQuestion = 0
-
-// ========================================
-// INICIAR JOGO
-// ========================================
-
-window.startGame = function(){
-
+function startGame(){
   showQuestion()
-
 }
 
-// ========================================
-// PRÓXIMA PERGUNTA
-// ========================================
-
-window.nextQuestion = function(){
-
-  currentQuestion++
-
-  if(currentQuestion >= questions.length){
-
-    currentQuestion = 0
-
-  }
-
+function nextQuestion(){
   showQuestion()
-
 }
-
-// ========================================
-// MOSTRAR PERGUNTA
-// ========================================
 
 function showQuestion(){
 
-  const q = questions[currentQuestion]
-
-  const question = document.getElementById("question")
-
   const answers = document.getElementById("answers")
 
-  question.innerText = q.question
-
-  answers.innerHTML = ""
-
   answers.classList.add("hidden")
-
-  q.answers.forEach((answer, index) => {
-
-    answers.innerHTML += `
-
-      <div class="bg-blue-500 p-5 rounded-2xl text-2xl font-bold">
-
-        ${String.fromCharCode(65 + index)}) ${answer}
-
-      </div>
-
-    `
-
-  })
 
   const box = document.getElementById("questionBox")
 
@@ -256,19 +268,13 @@ function showQuestion(){
 
   box.classList.add("questionAnimation")
 
-  setTimeout(() => {
-
+  setTimeout(()=>{
     answers.classList.remove("hidden")
-
-  }, 2500)
+  },2500)
 
   startTimer()
 
 }
-
-// ========================================
-// TIMER
-// ========================================
 
 function startTimer(){
 
@@ -278,16 +284,14 @@ function startTimer(){
 
   timer.style.width = width + "%"
 
-  const interval = setInterval(() => {
+  const interval = setInterval(()=>{
 
     width--
 
     timer.style.width = width + "%"
 
     if(width <= 0){
-
       clearInterval(interval)
-
     }
 
   },150)
@@ -295,3 +299,6 @@ function startTimer(){
 }
 
 </script>
+
+</body>
+</html>
